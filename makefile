@@ -32,12 +32,19 @@ METRICS_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME)-metrics:$(VERSION)
 # Running from within k8s/kind
 
 dev-up:
-kind create cluster \
- --image $(KIND) \
- --name $(KIND_CLUSTER) \
- --config zarf/k8s/dev/kind-config.yaml
+	kind create cluster \
+	--image $(KIND) \
+	--name $(KIND_CLUSTER) \
+	--config zarf/k8s/dev/kind-config.yaml
 
-    kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
+			kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
 
 dev-down:
-kind delete cluster --name $(KIND_CLUSTER)
+	kind delete cluster --name $(KIND_CLUSTER)
+
+# ==============================================================================
+
+dev-status:
+	kubectl get nodes -o wide
+	kubectl get svc -o wide
+	kubectl get pods -o wide --watch --all-namespaces

@@ -75,6 +75,13 @@ dev-update: all dev-load dev-restart
 
 dev-update-apply: all dev-load dev-apply
 
+# ==============================================================================
+# Metrics and Tracing
+
+metrics-view-sc:
+	expvarmon -ports="localhost:4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+
+
 
 # ==============================================================================
 dev-logs:

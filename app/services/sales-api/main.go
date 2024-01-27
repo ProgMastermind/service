@@ -1,13 +1,13 @@
 package main
 
 import (
+	"ardanlabs/service/business/web/v1/debug"
 	"ardanlabs/service/foundation/logger"
 	"context"
 	"errors"
 	"expvar"
 	"fmt"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"runtime"
@@ -64,7 +64,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 			IdleTimeout        time.Duration `conf:"default:120s"`
 			ShutdownTimeout    time.Duration `conf:"default:20s,mask"`
 			APIHost            string        `conf:"default:0.0.0.0:3000"`
-			DebugHost          string        `conf:"default:0.0.0.0:4003"`
+			DebugHost          string        `conf:"default:0.0.0.0:4000"`
 			CORSAllowedOrigins []string      `conf:"default:*"`
 		}
 	}{
@@ -103,7 +103,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 	go func() {
 		log.Info(ctx, "startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
 
-		if err := http.ListenAndServe(cfg.Web.DebugHost, http.DefaultServeMux); err != nil {
+		if err := http.ListenAndServe(cfg.Web.DebugHost, debug.Mux()); err != nil {
 			log.Error(ctx, "shutdown", "status", "debug v1 router closed", "host", cfg.Web.DebugHost, "msg", err)
 		}
 	}()

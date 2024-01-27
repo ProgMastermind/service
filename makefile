@@ -3,11 +3,10 @@ SHELL_PATH = /bin/ash
 SHELL = $(if $(wildcard $(SHELL_PATH)),/bin/ash,/bin/bash)
 
 run:
-		/mnt/c/Program\ Files/Go/bin/go.exe run app/services/sales-api/main.go | /mnt/c/Program\ Files/Go/bin/go.exe run app\tooling\logfmt\main.go
+	"/mnt/c/Program Files/Go/bin/go.exe" run app/services/sales-api/main.go | "/mnt/c/Program Files/Go/bin/go.exe" run app/tooling/logfmt/main.go
 
 run-help:
-		/mnt/c/Program\ Files/Go/bin/go.exe run app/services/sales-api/main.go --help | /mnt/c/Program\ Files/Go/bin/go.exe run app\tooling\logfmt\main.go
-
+		"/mnt/c/Program Files/Go/bin/go.exe" run app/services/sales-api/main.go --help | "/mnt/c/Program Files/Go/bin/go.exe" run app/tooling/logfmt/main.go
 # ==============================================================================
 
 # Define dependencies

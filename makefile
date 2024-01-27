@@ -3,7 +3,10 @@ SHELL_PATH = /bin/ash
 SHELL = $(if $(wildcard $(SHELL_PATH)),/bin/ash,/bin/bash)
 
 run:
-		go run app/services/sales-api/main.go | go run app\tooling\logfmt\main.go
+		/mnt/c/Program\ Files/Go/bin/go.exe run app/services/sales-api/main.go | /mnt/c/Program\ Files/Go/bin/go.exe run app\tooling\logfmt\main.go
+
+run-help:
+		/mnt/c/Program\ Files/Go/bin/go.exe run app/services/sales-api/main.go --help | /mnt/c/Program\ Files/Go/bin/go.exe run app\tooling\logfmt\main.go
 
 # ==============================================================================
 
@@ -93,3 +96,9 @@ dev-status:
 	kubectl get pods -o wide --watch --all-namespaces
 
 
+# ==============================================================================
+# Modules support
+
+tidy:
+	/mnt/c/Program\ Files/Go/bin/go.exe mod tidy
+	/mnt/c/Program\ Files/Go/bin/go.exe mod vendor

@@ -2,8 +2,6 @@ package v1
 
 import (
 	"ardanlabs/service/foundation/logger"
-	"encoding/json"
-	"net/http"
 	"os"
 
 	"github.com/dimfeld/httptreemux/v5"
@@ -16,20 +14,18 @@ type APIMuxConfig struct {
 	Log      *logger.Logger
 }
 
+// RouteAdder defines behaviour that sets the routes to bind for an instance
+// of the service
+
+type RouteAdder interface {
+	Add(mux *httptreemux.ContextMux, cfg APIMuxConfig)
+}
+
 // APIMux constructs a http.Handler with all application from routes defined
-func APIMux(cfg APIMuxConfig) *httptreemux.ContextMux {
+func APIMux(cfg APIMuxConfig, routeAdder RouteAdder) *httptreemux.ContextMux {
 	mux := httptreemux.NewContextMux()
 
-	h := func(w http.ResponseWriter, r *http.Request) {
-		status := struct {
-			Status string
-		}{
-			Status: "OK",
-		}
+	routeAdder.Add(mux, cfg)
 
-		json.NewEncoder(w).Encode(status)
-	}
-
-	mux.Handle(http.MethodGet, "/hack", h)
 	return mux
 }

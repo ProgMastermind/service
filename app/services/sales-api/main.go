@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ardanlabs/service/app/services/sales-api/v1/handlers"
 	v1 "ardanlabs/service/business/web/v1"
 	"ardanlabs/service/business/web/v1/debug"
 	"ardanlabs/service/foundation/logger"
@@ -124,7 +125,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 		Log:      log,
 	}
 
-	apiMux := v1.APIMux(cfgMux)
+	apiMux := v1.APIMux(cfgMux, handlers.Routes{})
 
 	api := http.Server{
 		Addr:         cfg.Web.APIHost,

@@ -7,6 +7,9 @@ run:
 
 run-help:
 		"/mnt/c/Program Files/Go/bin/go.exe" run app/services/sales-api/main.go --help | "/mnt/c/Program Files/Go/bin/go.exe" run app/tooling/logfmt/main.go
+
+curl:
+		curl -il http://localhost:3000/hack
 # ==============================================================================
 
 # Define dependencies

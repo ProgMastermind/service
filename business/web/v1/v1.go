@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"ardanlabs/service/business/web/v1/mid"
 	"ardanlabs/service/foundation/logger"
 	"ardanlabs/service/foundation/web"
 	"os"
@@ -22,7 +23,7 @@ type RouteAdder interface {
 
 // APIMux constructs a http.Handler with all application from routes defined
 func APIMux(cfg APIMuxConfig, routeAdder RouteAdder) *web.App {
-	app := web.NewApp(cfg.Shutdown)
+	app := web.NewApp(cfg.Shutdown, mid.Logger(cfg.Log))
 
 	routeAdder.Add(app, cfg)
 

@@ -1,12 +1,11 @@
 package hackgrp
 
 import (
+	"ardanlabs/service/foundation/web"
 	"net/http"
-
-	"github.com/dimfeld/httptreemux/v5"
 )
 
 // Routes add specific routes for this group
-func Routes(mux *httptreemux.ContextMux) {
-	mux.Handle(http.MethodGet, "/hack", Hack)
+func Routes(app *web.App) {
+	app.Handle(http.MethodGet, "/hack", Hack)
 }

@@ -1,12 +1,19 @@
 package hackgrp
 
 import (
+	"ardanlabs/service/business/web/v1/response"
 	"ardanlabs/service/foundation/web"
 	"context"
+	"errors"
+	"math/rand"
 	"net/http"
 )
 
 func Hack(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	if n := rand.Intn(100) % 2; n == 0 {
+		return response.NewError(errors.New("TRUST ERROR"), http.StatusBadRequest)
+	}
+
 	status := struct {
 		Status string
 	}{

@@ -1,6 +1,7 @@
 package mid
 
 import (
+	"ardanlabs/service/business/web/v1/metrics"
 	"ardanlabs/service/foundation/web"
 	"context"
 	"fmt"
@@ -21,7 +22,7 @@ func Panics() web.Middleware {
 					trace := debug.Stack()
 					err = fmt.Errorf("PANIC [%v] TRACE[%s]", rec, string(trace))
 
-					// metrics.AddPanics(ctx)
+					metrics.AddPanics(ctx)
 				}
 			}()
 

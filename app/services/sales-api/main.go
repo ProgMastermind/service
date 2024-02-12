@@ -5,6 +5,7 @@ import (
 	v1 "ardanlabs/service/business/web/v1"
 	"ardanlabs/service/business/web/v1/debug"
 	"ardanlabs/service/foundation/logger"
+	"ardanlabs/service/foundation/web"
 	"context"
 	"errors"
 	"expvar"
@@ -31,7 +32,7 @@ func main() {
 	}
 
 	traceIDFunc := func(ctx context.Context) string {
-		return ""
+		return web.GetTraceID(ctx)
 	}
 
 	log = logger.NewWithEvents(os.Stdout, logger.LevelInfo, "SALES-API", traceIDFunc, events)

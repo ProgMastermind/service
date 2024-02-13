@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -14,19 +15,21 @@ import (
 )
 
 func main() {
-	// err := genkey()
+	err := gentoken()
 
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func gentoken() error {
 
-	privateKey, err := genkey()
+	// Generate a new private key.
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return fmt.Errorf("generating key: %w", err)
 	}
+
 	// Generating a token requires defining a set of claims. In this applications
 	// case, we only care about defining the subject and the user in question and
 	// the roles they have on the database. This token will expire in a year.
@@ -64,6 +67,34 @@ func gentoken() error {
 	fmt.Println("**************")
 	fmt.Println(str)
 	fmt.Println("**************")
+
+	// =========================================================================
+
+	parser := jwt.NewParser(jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name}))
+
+	keyFunc := func(t *jwt.Token) (interface{}, error) {
+		return &privateKey.PublicKey, nil
+	}
+
+	var claims2 struct {
+		jwt.RegisteredClaims
+		Roles []string
+	}
+
+	tkn, err := parser.ParseWithClaims(str, &claims2, keyFunc)
+	if err != nil {
+		return errors.New("signature failed")
+	}
+
+	if !tkn.Valid {
+		fmt.Println("SIGNATURE NOT VALIDATED")
+		return nil
+	}
+
+	fmt.Println("SIGNATURE VALIDATED")
+	fmt.Printf("%#v\n", claims2)
+	fmt.Println("********************")
+
 	return nil
 
 }

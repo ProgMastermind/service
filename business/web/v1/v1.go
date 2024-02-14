@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"ardanlabs/service/business/web/v1/auth"
 	"ardanlabs/service/business/web/v1/mid"
 	"ardanlabs/service/foundation/logger"
 	"ardanlabs/service/foundation/web"
@@ -12,6 +13,7 @@ type APIMuxConfig struct {
 	Build    string
 	Shutdown chan os.Signal
 	Log      *logger.Logger
+	Auth     *auth.Auth
 }
 
 // RouteAdder defines behaviour that sets the routes to bind for an instance

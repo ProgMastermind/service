@@ -3,7 +3,9 @@ package main
 import (
 	"ardanlabs/service/app/services/sales-api/v1/handlers"
 	v1 "ardanlabs/service/business/web/v1"
+	"ardanlabs/service/business/web/v1/auth"
 	"ardanlabs/service/business/web/v1/debug"
+	"ardanlabs/service/foundation/keystore"
 	"ardanlabs/service/foundation/logger"
 	"ardanlabs/service/foundation/web"
 	"context"
@@ -70,6 +72,11 @@ func run(ctx context.Context, log *logger.Logger) error {
 			DebugHost          string        `conf:"default:0.0.0.0:4000"`
 			CORSAllowedOrigins []string      `conf:"default:*"`
 		}
+		Auth struct {
+			KeysFolder string `conf:"default:zarf/keys/"`
+			ActiveKID  string `conf:"54bb2165-71e1-41a6-af3e-7da4a0e1e2c1"`
+			Issuer     string `conf:"default:service project"`
+		}
 	}{
 		Version: conf.Version{
 			Build: build,
@@ -102,6 +109,27 @@ func run(ctx context.Context, log *logger.Logger) error {
 	expvar.NewString("build").Set(build)
 
 	// -------------------------------------------------------------------------
+	// Initialize authentication support
+
+	log.Info(ctx, "startup", "status", "initializing authentication support")
+
+	// Simple keystore versus using vault.
+	ks, err := keystore.NewFS(os.DirFS(cfg.Auth.KeysFolder))
+	if err != nil {
+		return fmt.Errorf("reading keys: %w", err)
+	}
+
+	authCfg := auth.Config{
+		Log:       log,
+		KeyLookup: ks,
+	}
+
+	auth, err := auth.New(authCfg)
+	if err != nil {
+		return fmt.Errorf("constructing auth: %w", err)
+	}
+
+	// -------------------------------------------------------------------------
 	// Start Debug Service
 
 	go func() {
@@ -124,6 +152,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 		Build:    build,
 		Shutdown: shutdown,
 		Log:      log,
+		Auth:     auth,
 	}
 
 	apiMux := v1.APIMux(cfgMux, handlers.Routes{})

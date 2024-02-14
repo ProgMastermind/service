@@ -1,6 +1,7 @@
 package mid
 
 import (
+	"ardanlabs/service/business/web/v1/auth"
 	"ardanlabs/service/business/web/v1/response"
 	"ardanlabs/service/foundation/logger"
 	"ardanlabs/service/foundation/web"
@@ -27,6 +28,12 @@ func Errors(log *logger.Logger) web.Middleware {
 						Error: reqErr.Error(),
 					}
 					status = reqErr.Status
+
+				case auth.IsAuthError(err):
+					er = response.ErrorDocument{
+						Error: http.StatusText(http.StatusUnauthorized),
+					}
+					status = http.StatusUnauthorized
 
 				default:
 					er = response.ErrorDocument{

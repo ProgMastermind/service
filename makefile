@@ -27,7 +27,7 @@ load:
 	hey -m GET -c 100 -n 100000 "http://localhost:3000/hack"
 
 curl-auth:
-	curl -il -H "Authorization: Bearer ${TOKEN}" http://localhost:3000/hack
+	curl -il -H "Authorization: Bearer ${TOKEN}" http://localhost:3000/hackauth
 
 admin:
 	"/mnt/c/Program Files/Go/bin/go.exe" run app/tooling/sales-admin/main.go

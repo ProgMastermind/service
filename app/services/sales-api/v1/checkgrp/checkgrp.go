@@ -1,6 +1,7 @@
 package checkgrp
 
 import (
+	"ardanlabs/service/foundation/logger"
 	"ardanlabs/service/foundation/web"
 	"context"
 	"net/http"
@@ -9,12 +10,14 @@ import (
 
 // Handlers manages the set of check endpoints
 type Handlers struct {
+	log   *logger.Logger
 	build string
 }
 
 // New constructs a Handlers api for the check group
-func New(build string) *Handlers {
+func New(build string, log *logger.Logger) *Handlers {
 	return &Handlers{
+		log:   log,
 		build: build,
 	}
 }
@@ -31,6 +34,8 @@ func (h *Handlers) Readiness(ctx context.Context, w http.ResponseWriter, r *http
 	}{
 		Status: status,
 	}
+
+	h.log.Info(ctx, "readiness", "status", status)
 
 	return web.Respond(ctx, w, data, statusCode)
 }
@@ -66,6 +71,7 @@ func (h *Handlers) Liveness(ctx context.Context, w http.ResponseWriter, r *http.
 		GOMAXPROCS: os.Getenv("GOMAXPROCS"),
 	}
 
+	h.log.Info(ctx, "liveness", "status", "OK")
 	// This handler provides a free timer loop.
 
 	return web.Respond(ctx, w, data, http.StatusOK)

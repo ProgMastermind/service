@@ -6,6 +6,8 @@ import (
 	"ardanlabs/service/foundation/logger"
 	"ardanlabs/service/foundation/web"
 	"os"
+
+	"github.com/jmoiron/sqlx"
 )
 
 // APIMuxConfig contains all the mandatory systems required by handlers
@@ -14,6 +16,7 @@ type APIMuxConfig struct {
 	Shutdown chan os.Signal
 	Log      *logger.Logger
 	Auth     *auth.Auth
+	DB       *sqlx.DB
 }
 
 // RouteAdder defines behaviour that sets the routes to bind for an instance

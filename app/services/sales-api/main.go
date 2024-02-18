@@ -2,6 +2,7 @@ package main
 
 import (
 	"ardanlabs/service/app/services/sales-api/v1/handlers"
+	db "ardanlabs/service/business/data/dbsql/pgx"
 	v1 "ardanlabs/service/business/web/v1"
 	"ardanlabs/service/business/web/v1/auth"
 	"ardanlabs/service/business/web/v1/debug"
@@ -77,6 +78,15 @@ func run(ctx context.Context, log *logger.Logger) error {
 			ActiveKID  string `conf:"54bb2165-71e1-41a6-af3e-7da4a0e1e2c1"`
 			Issuer     string `conf:"default:service project"`
 		}
+		DB struct {
+			User         string `conf:"default:postgres"`
+			Password     string `conf:"default:postgres,mask"`
+			Host         string `conf:"default:database-service.sales-system.svc.cluster.local"`
+			Name         string `conf:"default:postgres"`
+			MaxIdleConns int    `conf:"default:2"`
+			MaxOpenConns int    `conf:"default:0"`
+			DisableTLS   bool   `conf:"default:true"`
+		}
 	}{
 		Version: conf.Version{
 			Build: build,
@@ -107,6 +117,28 @@ func run(ctx context.Context, log *logger.Logger) error {
 	log.Info(ctx, "startup", "config", out)
 
 	expvar.NewString("build").Set(build)
+
+	// -------------------------------------------------------------------------
+	// Database Support
+
+	log.Info(ctx, "startup", "status", "initializing database support", "hostport", cfg.DB.Host)
+
+	db, err := db.Open(db.Config{
+		User:         cfg.DB.User,
+		Password:     cfg.DB.Password,
+		Host:         cfg.DB.Host,
+		Name:         cfg.DB.Name,
+		MaxIdleConns: cfg.DB.MaxIdleConns,
+		MaxOpenConns: cfg.DB.MaxOpenConns,
+		DisableTLS:   cfg.DB.DisableTLS,
+	})
+	if err != nil {
+		return fmt.Errorf("connecting to db: %w", err)
+	}
+	defer func() {
+		log.Info(ctx, "shutdown", "status", "stopping database support", "hostport", cfg.DB.Host)
+		db.Close()
+	}()
 
 	// -------------------------------------------------------------------------
 	// Initialize authentication support
@@ -153,6 +185,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 		Shutdown: shutdown,
 		Log:      log,
 		Auth:     auth,
+		DB:       db,
 	}
 
 	apiMux := v1.APIMux(cfgMux, handlers.Routes{})

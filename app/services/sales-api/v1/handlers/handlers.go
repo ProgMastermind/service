@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"ardanlabs/service/app/services/sales-api/v1/checkgrp"
+	"ardanlabs/service/app/services/sales-api/v1/handlers/checkgrp"
 	"ardanlabs/service/app/services/sales-api/v1/handlers/hackgrp"
+	"ardanlabs/service/app/services/sales-api/v1/handlers/usergrp"
 	v1 "ardanlabs/service/business/web/v1"
 	"ardanlabs/service/foundation/web"
 )
@@ -18,5 +19,12 @@ func (Routes) Add(app *web.App, apiCfg v1.APIMuxConfig) {
 	checkgrp.Routes(app, checkgrp.Config{
 		Build: apiCfg.Build,
 		Log:   apiCfg.Log,
+	})
+
+	usergrp.Routes(app, usergrp.Config{
+		Build: apiCfg.Build,
+		Log:   apiCfg.Log,
+		DB:    apiCfg.DB,
+		Auth:  apiCfg.Auth,
 	})
 }

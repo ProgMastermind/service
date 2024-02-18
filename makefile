@@ -41,7 +41,7 @@ curl-create:
 	-H 'Content-Type: application/json' \
 	-d '{"name":"bill","email":"b@gmail.com","roles":["ADMIN"],"department":"IT","password":"123","passwordConfirm":"123"}' \
 	http://localhost:3000/v1/users
-	
+
 admin:
 	"/mnt/c/Program Files/Go/bin/go.exe" run app/tooling/sales-admin/main.go
 # ==============================================================================
@@ -159,3 +159,22 @@ dev-status:
 tidy:
 	/mnt/c/Program\ Files/Go/bin/go.exe mod tidy
 	/mnt/c/Program\ Files/Go/bin/go.exe mod vendor
+
+# Running tests within the local computer
+
+test-race:
+	CGO_ENABLED=1 "/mnt/c/Program Files/Go/bin/go.exe" test -race -count=1 ./...
+
+test-only:
+	CGO_ENABLED=0 "/mnt/c/Program Files/Go/bin/go.exe" test -count=1 ./...
+
+lint:
+	CGO_ENABLED=0 "/mnt/c/Program Files/Go/bin/go.exe" vet ./...
+	staticcheck -checks=all ./...
+
+vuln-check:
+	govulncheck ./...
+
+test: test-only lint vuln-check
+
+test-race: test-race lint vuln-check

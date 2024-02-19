@@ -2,7 +2,9 @@ package userdb
 
 import (
 	db "ardanlabs/service/business/data/dbsql/pgx"
+	"ardanlabs/service/business/data/order"
 	"ardanlabs/service/foundation/logger"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -98,4 +100,36 @@ func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, err
 	}
 
 	return toCoreUser(dbUsr)
+}
+
+// Query retrieves a list of existing users from the database.
+func (s *Store) Query(ctx context.Context, filter user.QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]user.User, error) {
+	data := map[string]interface{}{
+		"offset":        (pageNumber - 1) * rowsPerPage,
+		"rows_per_page": rowsPerPage,
+	}
+
+	const q = `
+	SELECT
+		user_id, name, email, password_hash, roles, enabled, department, date_created, date_updated
+	FROM
+		users`
+
+	buf := bytes.NewBufferString(q)
+	applyFilter(filter, data, buf)
+
+	orderByClause, err := orderByClause(orderBy)
+	if err != nil {
+		return nil, err
+	}
+
+	buf.WriteString(orderByClause)
+	buf.WriteString(" OFFSET :offset ROWS FETCH NEXT :rows_per_page ROWS ONLY")
+
+	var dbUsrs []dbUser
+	if err := db.NamedQuerySlice(ctx, s.log, s.db, buf.String(), data, &dbUsrs); err != nil {
+		return nil, fmt.Errorf("namedqueryslice: %w", err)
+	}
+
+	return toCoreUserSlice(dbUsrs)
 }

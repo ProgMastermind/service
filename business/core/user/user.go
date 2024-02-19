@@ -1,6 +1,7 @@
 package user
 
 import (
+	"ardanlabs/service/business/data/order"
 	"ardanlabs/service/foundation/logger"
 	"context"
 	"errors"
@@ -25,6 +26,7 @@ type Storer interface {
 	Create(ctx context.Context, usr User) error
 	QueryByEmail(ctx context.Context, email mail.Address) (User, error)
 	QueryByID(ctx context.Context, userID uuid.UUID) (User, error)
+	Query(ctx context.Context, filter QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]User, error)
 }
 
 // ===============================================================================
@@ -70,6 +72,20 @@ func (c *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 	}
 
 	return usr, nil
+}
+
+// Query retrieves a list of existing users.
+func (c *Core) Query(ctx context.Context, filter QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]User, error) {
+	if err := filter.Validate(); err != nil {
+		return nil, err
+	}
+
+	users, err := c.storer.Query(ctx, filter, orderBy, pageNumber, rowsPerPage)
+	if err != nil {
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	return users, nil
 }
 
 // QueryByEmail finds the user by a specified user email.

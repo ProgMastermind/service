@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/mail"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,6 +23,8 @@ var (
 // retrieve data.
 type Storer interface {
 	Create(ctx context.Context, usr User) error
+	QueryByEmail(ctx context.Context, email mail.Address) (User, error)
+	QueryByID(ctx context.Context, userID uuid.UUID) (User, error)
 }
 
 // ===============================================================================
@@ -67,4 +70,24 @@ func (c *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 	}
 
 	return usr, nil
+}
+
+// QueryByEmail finds the user by a specified user email.
+func (c *Core) QueryByEmail(ctx context.Context, email mail.Address) (User, error) {
+	user, err := c.storer.QueryByEmail(ctx, email)
+	if err != nil {
+		return User{}, fmt.Errorf("query: email[%s]: %w", email, err)
+	}
+
+	return user, nil
+}
+
+// QueryByID finds the user by the specified ID.
+func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (User, error) {
+	user, err := c.storer.QueryByID(ctx, userID)
+	if err != nil {
+		return User{}, fmt.Errorf("query: userID[%s]: %w", userID, err)
+	}
+
+	return user, nil
 }

@@ -25,6 +25,7 @@ var (
 type Storer interface {
 	Create(ctx context.Context, usr User) error
 	QueryByEmail(ctx context.Context, email mail.Address) (User, error)
+	Count(ctx context.Context, filter QueryFilter) (int, error)
 	QueryByID(ctx context.Context, userID uuid.UUID) (User, error)
 	Query(ctx context.Context, filter QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]User, error)
 }
@@ -72,6 +73,15 @@ func (c *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 	}
 
 	return usr, nil
+}
+
+// Count returns the total number of users.
+func (c *Core) Count(ctx context.Context, filter QueryFilter) (int, error) {
+	if err := filter.Validate(); err != nil {
+		return 0, err
+	}
+
+	return c.storer.Count(ctx, filter)
 }
 
 // Query retrieves a list of existing users.

@@ -2,6 +2,7 @@ package usergrp
 
 import (
 	"ardanlabs/service/business/core/user"
+	"ardanlabs/service/business/data/page"
 	"ardanlabs/service/business/web/v1/auth"
 	"ardanlabs/service/business/web/v1/response"
 	"ardanlabs/service/foundation/web"
@@ -44,4 +45,51 @@ func (h *handlers) create(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 
 	return web.Respond(ctx, w, toAppUser(usr), http.StatusCreated)
+}
+
+// query returns a list of users with paging.
+func (h *handlers) query(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	page, err := page.Parse(r)
+	if err != nil {
+		return err
+	}
+
+	filter, err := parseFilter(r)
+	if err != nil {
+		return err
+	}
+
+	orderBy, err := parseOrder(r)
+	if err != nil {
+		return err
+	}
+
+	users, err := h.user.Query(ctx, filter, orderBy, page.Number, page.RowsPerPage)
+	if err != nil {
+		return fmt.Errorf("query: %w", err)
+	}
+
+	total, err := h.user.Count(ctx, filter)
+	if err != nil {
+		return fmt.Errorf("count: %w", err)
+	}
+
+	return web.Respond(ctx, w, response.NewPageDocument(toAppUsers(users), total, page.Number, page.RowsPerPage), http.StatusOK)
+}
+
+// QueryByID returns a user by its ID.
+func (h *handlers) QueryByID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	id := auth.GetUserID(ctx)
+
+	usr, err := h.user.QueryByID(ctx, id)
+	if err != nil {
+		switch {
+		case errors.Is(err, user.ErrNotFound):
+			return response.NewError(err, http.StatusNotFound)
+		default:
+			return fmt.Errorf("querybyid: id[%s]: %w", id, err)
+		}
+	}
+
+	return web.Respond(ctx, w, toAppUser(usr), http.StatusOK)
 }

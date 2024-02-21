@@ -37,8 +37,8 @@ type Storer interface {
 
 // Core manages the set of APIs for user access.
 type Core struct {
-	log    *logger.Logger
 	storer Storer
+	log    *logger.Logger
 }
 
 // NewCore constructs a user core API for use.

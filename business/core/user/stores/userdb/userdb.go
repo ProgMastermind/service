@@ -3,6 +3,7 @@ package userdb
 import (
 	db "ardanlabs/service/business/data/dbsql/pgx"
 	"ardanlabs/service/business/data/order"
+	"ardanlabs/service/business/data/transaction"
 	"ardanlabs/service/foundation/logger"
 	"bytes"
 	"context"
@@ -19,7 +20,7 @@ import (
 // Store manages the set of APIs for user database access.
 type Store struct {
 	log *logger.Logger
-	db  *sqlx.DB
+	db  sqlx.ExtContext
 }
 
 // NewStore constructs the api for data access.
@@ -28,6 +29,22 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 		log: log,
 		db:  db,
 	}
+}
+
+// ExecuteUnderTransaction construts a new Store value replacing the sqlx DB
+// value with a sqlx DB value that is currently inside a transactionl
+func (s *Store) ExecuteUnderTransaction(tx transaction.Transaction) (user.Storer, error) {
+	ec, err := db.GetExtContext(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	s = &Store{
+		log: s.log,
+		db:  ec,
+	}
+
+	return s, nil
 }
 
 // Create inserts a new user into the database.

@@ -2,6 +2,7 @@ package user
 
 import (
 	"ardanlabs/service/business/data/order"
+	"ardanlabs/service/business/data/transaction"
 	"ardanlabs/service/foundation/logger"
 	"context"
 	"errors"
@@ -23,6 +24,8 @@ var (
 // Storer interface declares the behavior this package needs to perists and
 // retrieve data.
 type Storer interface {
+	ExecuteUnderTransaction(tx transaction.Transaction) (Storer, error)
+
 	Create(ctx context.Context, usr User) error
 	QueryByEmail(ctx context.Context, email mail.Address) (User, error)
 	Count(ctx context.Context, filter QueryFilter) (int, error)
@@ -41,9 +44,25 @@ type Core struct {
 // NewCore constructs a user core API for use.
 func NewCore(log *logger.Logger, storer Storer) *Core {
 	return &Core{
-		log:    log,
 		storer: storer,
+		log:    log,
 	}
+}
+
+// ExecuteUnderTransaction constructs a new Core value that will use the
+// specified transation in any store related calls.
+func (c *Core) ExecuteUnderTransaction(tx transaction.Transaction) (*Core, error) {
+	trS, err := c.storer.ExecuteUnderTransaction(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	c = &Core{
+		storer: trS,
+		log:    c.log,
+	}
+
+	return c, nil
 }
 
 // Create adds a new user to the system.
